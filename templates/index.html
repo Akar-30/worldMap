@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>world</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #info-box {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000; 
+        }
+
+        #info-box .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff5c5c;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .progress {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+            z-index: 1000; 
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="map" style="width: 100%; height: 100vh;"></div>
+    <div id="info-box">
+        <button class="close-btn" onclick="closeInfoBox()">Close</button>
+        <div id="info-content"></div>
+    </div>
+    <div class="progress"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <script>
+        var map = L.map('map').setView([20, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+        }).addTo(map);
+
+        function onMapClick(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+            var infoBox = document.getElementById('info-box');
+            var infoContent = document.getElementById('info-content');
+            var progress = document.querySelector('.progress');
+
+            infoBox.style.display = 'none';
+            progress.style.display = 'block';
+
+            fetch(`/get_country?lat=${lat}&lng=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    infoContent.innerHTML = `
+                        <h3>Country Name: ${data.name}</h3>
+                        <p>Capital City: ${data.capital}</p>
+                        <p>Population: ${data.population}</p>
+                        <p>Area: ${data.area} sq km</p>
+                        <p>Region/Continent: ${data.region}</p>
+                        <p>Languages: ${data.languages}</p>
+                    `;
+                    infoBox.style.display = 'block';
+                    progress.style.display = 'none';
+                })
+                .catch(error => {
+                    alert('Error fetching data');
+                    progress.style.display = 'none';
+                });
+        }
+
+        function closeInfoBox() {
+            document.getElementById('info-box').style.display = 'none';
+        }
+
+        map.on('click', onMapClick);
+    </script>
+
+</body>
+
+</html>

@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import requests
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
@@ -45,7 +47,7 @@ def index():
 def get_country():
     lat = request.args.get('lat')
     lng = request.args.get('lng')
-    api_key = '2b726e98af3e4140b9d67c70c9818a88'
+    api_key = os.getenv('OPENCAGE_API_KEY')
     country_info = get_country_info(lat, lng, api_key)
     return jsonify(country_info)
 
